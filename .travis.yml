@@ -1,19 +1,24 @@
-language: node_js
-node_js:
-- "8.4.0"
-sudo: required
+language: java
+before_install:
+- sudo rm /usr/local/bin/docker-compose
+- curl -L https://github.com/docker/compose/releases/download/1.20.1/docker-compose-`uname
+  -s`-`uname -m` > docker-compose
+- chmod +x docker-compose
+- sudo mv docker-compose /usr/local/bin
+- docker login -u "592115022" -p "$DOCKER_PASSWORD"
+install:
+- mvn install -Dmaven.javadoc.skip=true -B -V
+- ls -l
+- docker build --build-arg JAR_FILE=/target/backend.jar -t 592115022/se234-lab10-backend .
+- docker push 592115022/se234-lab10-backend
+- docker pull 592115022/se234-lab10-client
+script:
+- docker-compose -H "$DOCKER_HOST" up -d
 cache:
   directories:
-    - node_modules
-before_install:
-- docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
-- npm i -D uglifyjs-webpack-plugin
-install:
-- npm install
-- npm run ng-deploy
-- ls -l
-script: 
-- docker build -t $DOCKER_USERNAME/se234-lab10-client .
-- docker push $DOCKER_USERNAME/se234-lab10-client
-
-service: docker
+  - "$HOME/.m2"
+env:
+  global:
+  - secure: tBV7UcH0FF+0bOgeOB86Ktm0BPwByBu3uLzyhPUMCjnvKeE1AKkuO6Al6uCICUVLz9DnASqKJnjx3OaOaUbp2l+6CnoVfmPuwVQDKIlg0Q9G5OFV07QYpJM/tW4MkMzOwPOyxjOqMMojLI6ajGib1n7KQArPESYpVAjvWdr6rWAMGKtL86SI1qw7+Xa3/V4ESMqXt8rgc7RFpjAK9+AeLQ1bRuyBo0dFrIvTlRXHKdKqVBPzBx4AxSc+mEYyBMgQodJnc6GLfiLNwsifadjAjX68P+M55mGask3TUsbim3HN8Rbz1QJRZGG/B0hB4MzOIhLRmTEJpiyEVLmP74kIJmk8g/cHhVe2UBoEtiBoscY6GMJG6jVoT12+k1Q+wvvRI/q5iVDDPwWEt9B6py7/4Q0AQXz5sEQgEjmuofG6mMAYO+h2sYho4Mbv7n5MDFYPc5cSBSSuE2U2nTv+aIF9G1QqRcHEqRmQeT+vQu747xnwRMJNTjB9KZBj0WMorSznv/vIQ8rZAZ0/MOSs4gtfsUz5xDeKW7jvjOiQlOKYF//Un24l79hRUu972FXtcRl2+2msV5h8EmbUuteTzP1CXTNqRhBm8iyp837728R8MSnmjCEHTjlrHIsxPpYrpMjs1BGaq6JYOIVqhImcx5ow0AuMSAzGfYMUwVEaGkraDO4=
+  - secure: Hb5Ui49d8NiEuGrB22ri90IxKxSkYn0prv1TsSIcQxaHhyr5agw+sBRnomOiqJ+0RO1uSMZN+DVf94jR0AgU2TNEHQXQ3z4T/F8Z9akFUf3XQ0eMwQazRmAAxqlJO00LBzn046Qq63yNxP3Sxmx5qh7rh9M3ntjQPGSxo/YQTRc90MkcPsQSNfKOxOSOLBd7WtD8ovVC/kxJv68za6N6ciTeWCOtpuN/k3e2pfRGQaA8wR9Tn39Zsqf2BQIrnJBx0jm/XeY+RVLroBnC6UMIJGs+gHdOvnca220V7lOqZ3W6BlXl21lEQSoOOsrNDi6Hc2UeZHTOSuIl0LMaxoQr9d9SvlvTYDiDbGx1/8WVBiS9dnMk+/EcEc4eGUX9/saHhcLLIqZjEa3b78Be9BBb0cTjpm5cK8zAN5/DDTY4rQw4DOeIuctjkAv0WW2BvBSLMNVTv8LMWkplHtgnuc5ybpiGKjROUluf3DVVYVvsLyY9/enNO3BhUJh/kIoaLzKUBCirxQERCkYIHsM5Ew1fesNCT4mUHrg1caJ/ctFOgaGhCgancaXdX32WWyrSmZomcMxqXWVX/u5i68jxFAIoPAqcexWo+aA6MfQSPYDyljVkH+OWzib2dOCaX5SNZ0tZ/e2ffoiHalwsEIBVO1vEPZxsYSLgujMToMUZNqsfjxA=
+  - secure: HVL/3rg31UNlYt/9fDeOi7AoQHK0iOpoPBfcomGtWa0pJ5DD2zDuhLDOt3WBI217RRsvy1dWg/RDknuf9o18dMcDfJmFGrdsIZifsXtMrzro4leBuL8Xl/byFYox7SvJTK2SXZt2QBSlFpG3HextI53iNk2yy2H76Elx/2gPSZDWYouWDF/wsfPEC4FjIHLCdVNCVux8+zvAXqkjlFClLI09jT1mLMljCEEXyym7jazP2SAWKYBRniVhFpg0zpaI3q9AnQy7NThdtr3dVbl+Ikf0ZXGuHEKpWvesAP7BDPJLl9+Utx2XkXvr7/hEFzDxQy7iV+OzcIQerrj0owI5+/v+T9tPQBEM8yqR12/YHDaXj8xswNexLBlwgFF1Et0iRTFmy1CCoviMmGN8k7j6bVU97OuGP2oe6uC+KVrdyLRdG2Tuh1Q1fpdSB0Shbv5eJoLrbdgrjaRqekEgH9DEyWHTjPGEc7W9BBQ4BtZFlyVOqcZj6vKTW9Kofae+IJ8KMssDp5tA79L0uUdrRh4Ht8vU7VeAMln64hD7KjPShetyBs6uKrCVqoK2BPNKObTr/pblKURWf4wKeqMvzOLdtih9saIyqxsGV4Z9BgQf8wpiFbjJf6UM2L03oI8mxeRCqX+bwX5kDkSWWA6GG+lr+b/kzTJ0/5dFblodWvwSQaI=
