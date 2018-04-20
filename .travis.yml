@@ -1,21 +1,21 @@
-language: java
-before_install:
-- sudo rm /usr/local/bin/docker-compose
-- curl -L https://github.com/docker/compose/releases/download/1.20.1/docker-compose-`uname -s`-`uname -m` > docker-compose
-- chmod +x docker-compose
-- sudo mv docker-compose /usr/local/bin
-- docker login -u "592115022" -p "$DOCKER_PASSWORD"
-install:
-- mvn install -Dmaven.javadoc.skip=true -B -V
-- ls -l
-- docker build --build-arg JAR_FILE=/target/backend.jar -t 592115022/se234-lab10-backend .
-- docker push 592115022/se234-lab10-backend
-- docker pull 592115022/se234-lab10-client
-script:
-- docker-compose -H "$DOCKER_HOST" up -d
+language: node_js
+node_js:
+- 8.4.0
+sudo: required
 cache:
   directories:
-  - "$HOME/.m2"
+  -node_modules
+before_install:
+- docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
+- npm i -D uglifyjs-webpack-plugon
+install:
+- npm install
+- npm run ng-deploy
+- ls -l
+script:
+- docker build -t $DOCKER_USERNAME/se234-lab10-client .
+- docker push $DOCKER_USERNAME/se234-lab10-client
+service: docker
 env:
   global:
   - secure: G2CD7rbu+7/9WLrYnQHPa5dMGbePSc8CVKKixeqOjIONNagWb2L0XE89h47oVaZanG0EXK6U+7uYqhtOJzZisAUjTt3n40bFNT15YA7hoF+Rr9iXy1HUlIeuTDCmqdUqFCXARIb49MTG+LPrpBg4Y3Mj8MccRdjpMn/wvigCpkK4bDV6xlUuAAz7fw+Z544w109zkOhKdjJpyMHKVazzIy/mBhftZ04WNPWmeVINrFHl1H9QtwUXu2VpJe1km6YyR7xyYvSxvmpnuMSh3WBI2/Di3qVQg3Hx/0tYbXHkrjK/IqSqizvl39MEm13eDNkpg4e4WbUSknTtgwG4xX3Qx4A5X/KpsT0ExEed4i6kGaQxYA1vE8guNQJxCUQUppgKdtybX76eny5PIRW2IfhA07SBvUbvTG8v9GdKNan+j9nJ6Hr6jyR304CBOeg43h60aCXUO7FmRY35iTRmoqoYD2iOpAmgAduech91DC9LIW3f8grG9qo7ivh1SNiYrO7zR47UeWGgs/HB2IIQbNuP9NJWLmwsW4wjVICL+MqEYS8z91XqU2G3zblA77g3kknctRTO4kYlirCSUQncLJcfMr4UmtGFfLtXeozoTi+/Ms+6DGYmhFxrzt8Lx4KzJUxW9xQNXkSr0NQhda+yDGIDxPK3u3QIUJ1nsVtA4TvFhc0=
